@@ -1,0 +1,81 @@
+import sys
+import traceback
+from datetime import datetime
+
+from aiohttp import web
+from aiohttp.web import Request, Response, json_response
+from botbuilder.core import (
+    BotFrameworkAdapterSettings,
+    TurnContext,
+    BotFrameworkAdapter,
+)
+from botbuilder.core import ConversationState,MemoryStorage
+from botbuilder.core.integration import aiohttp_error_middleware
+from botbuilder.schema import Activity, ActivityTypes
+
+from dialogs import BotDialog
+
+
+
+#SETTINGS = BotFrameworkAdapterSettings("c19a769c-ca10-4648-828d-a05cfb1de190","Lg~A~l~GoAiiXs3y4r2cdN9opi-tC89G80")
+SETTINGS = BotFrameworkAdapterSettings("","")
+ADAPTER = BotFrameworkAdapter(SETTINGS)
+
+
+
+async def on_error(context: TurnContext, error: Exception):
+    print(f"\n [on_turn_error] unhandled error: {error}", file=sys.stderr)
+    traceback.print_exc()
+
+    await context.send_activity("The bot encountered an error or bug.")
+    await context.send_activity(
+        "To continue to run this bot, please fix the bot source code."
+    )
+    if context.activity.channel_id == "emulator":
+        trace_activity = Activity(
+            label="TurnError",
+            name="on_turn_error Trace",
+            timestamp=datetime.utcnow(),
+            type=ActivityTypes.trace,
+            value=f"{error}",
+            value_type="https://www.botframework.com/schemas/error",
+        )
+        # Send a trace activity, which will be displayed in Bot Framework Emulator
+        await context.send_activity(trace_activity)
+
+
+ADAPTER.on_turn_error = on_error
+
+BOT = BotDialog(ConversationState(MemoryStorage()))
+
+
+async def messages(req: Request) -> Response:
+    if "application/json" in req.headers["Content-Type"]:
+        body = await req.json()
+    else:
+        return Response(status=415)
+
+    activity = Activity().deserialize(body)
+    auth_header = req.headers["Authorization"] if "Authorization" in req.headers else ""
+
+    try:
+        response = await ADAPTER.process_activity(activity, auth_header, BOT.on_turn)
+        if response:
+            return json_response(data=response.body, status=response.status)
+        return Response(status=201)
+    except Exception as exception:
+        raise exception
+
+def init_func(argv):
+    APP = web.Application(middlewares=[aiohttp_error_middleware])
+    APP.router.add_post("/api/messages", messages)
+    return APP
+
+
+if __name__ == "__main__":
+    APP = init_func(None)
+
+    try:
+        web.run_app(APP, host="localhost", port=3978)
+    except Exception as error:
+        raise error
