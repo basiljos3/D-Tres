@@ -11,8 +11,8 @@ from botbuilder.schema import HeroCard, ActionTypes, CardAction
 
 
 
-from data_models import UserProfile
-from dialogs.chart import Chart
+# from data_models import UserProfile
+# from dialogs.chart import Chart
 
 
 class Search(ComponentDialog):
@@ -20,7 +20,7 @@ class Search(ComponentDialog):
         super(Search, self).__init__(dialog_id or Search.__name__)
         self.USER_INFO = "value-userInfo"
         self.add_dialog(TextPrompt("text_prompt"))
-        self.add_dialog(Chart(Chart.__name__))
+        # self.add_dialog(Chart(Chart.__name__))
         self.add_dialog(NumberPrompt("number_prompt", self.IsValidPhoneNumber))
         self.add_dialog(WaterfallDialog("search_dialog",[self.details,self.details_phone,self.details_email,self.options, self.menu_val]))
         self.initial_dialog_id = "search_dialog"

@@ -17,7 +17,6 @@ from dialogs import BotDialog
 
 
 
-#SETTINGS = BotFrameworkAdapterSettings("c19a769c-ca10-4648-828d-a05cfb1de190","Lg~A~l~GoAiiXs3y4r2cdN9opi-tC89G80")
 SETTINGS = BotFrameworkAdapterSettings("","")
 ADAPTER = BotFrameworkAdapter(SETTINGS)
 
