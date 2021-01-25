@@ -20,7 +20,7 @@ class BotDialog(ConversationState):
         self.dialog_set.add(WaterfallDialog("main_dialog",[self.StartMessage, self.FinalMessage]))
 
     async def StartMessage(self,waterfall_step:WaterfallStepContext) -> DialogTurnResult:
-        await waterfall_step.context.send_activity(MessageFactory.text("Welcome Basol, How can I help you."))
+        await waterfall_step.context.send_activity(MessageFactory.text("Welcome Basil, How can I help you."))
         return await waterfall_step.begin_dialog(Menu.__name__)
 
     
